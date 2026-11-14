@@ -9,7 +9,7 @@ plt.style.use("ggplot")
 cost_temp_termometro = 95.8
 
 # 2 costanti di tempo per considerare il tempo di accendere la resistenza e la reazione del termometro
-inf_tlim = 2.5*cost_temp_termometro 
+inf_tlim = 3*cost_temp_termometro 
 P_0 = 100.82 # kPa
 dP = 0.005 # kPa
 dT = 0.05 # °C = K
@@ -46,26 +46,29 @@ for i in range(1, N_misure+1):
     fit = LinearFit(df_fit, "T", "P", "dP", True)
     a = fit.get_fit_params()[0][0]
 
+    # stimo le nuove incertezze contanto anche quelle su T
     dP_new = sqrt(dP**2 + (a*dT**2))
     df_fit["dP"] = [dP_new for ti in t]
 
+    # fit finale
     fit = LinearFit(df_fit, "T", "P", "dP", True)
     p, cov = fit.get_fit_params()
 
     chi2 = fit.get_chi2().chi2
     df = fit.get_chi2().df
-    a = fit.get_fit_params()[0][0]
+    a = p[0]
     da = sqrt(cov[0][0])
     a_exp = (P[0]+P_0)/T[0]
 
-    # print(f"a = {a} +- {da}")
-    # print("a_exp = ", a_exp)
-    # print("chi2 = ", chi2)
-    # print("df = ", df)
-    # print("sqrt(df) = ", sqrt(df))
+    print(f"a = {a} +- {da}")
+    print("a_exp = ", a_exp)
+    print("chi2 = ", chi2)
+    print("df = ", df)
+    print("sqrt(df) = ", sqrt(df))
 
     z = abs(a_exp - a)/da
-    print(z)
+    print("z = ", z)
+    print("\n")
 
     fig, ax = plt.subplots()
     fit.graph(ax, ("$T$ [K]", "$P(T)$ [kPa]"), 3, 15)
