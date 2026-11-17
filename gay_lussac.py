@@ -10,7 +10,7 @@ cost_temp_termometro = 95.8
 
 # 2 costanti di tempo per considerare il tempo di accendere la resistenza e la reazione del termometro
 inf_tlim = 3*cost_temp_termometro 
-P_0 = 100.82 # kPa
+P_a = 100.82 # kPa
 dP = 0.005/sqrt(12) # kPa
 dT = 0.05/sqrt(12) # °C = K
 
@@ -20,6 +20,7 @@ for i in range(1, N_misure+1):
     dati_T = converti(f"./misure/temperatura gl/temp{i}.txt")
     dati_P = converti(f"./misure/pressione gl/press{i}.txt")
     T_0 = (dati_T["Temperatura(C)"].to_numpy()+273.15)[0]
+    P_0 = (dati_P["Pressione(kPa)"].to_numpy())[0]
     # escludo il transiente iniziale
     dati_T = dati_T[dati_T["Tempo(s)"] >= inf_tlim]
     dati_P = dati_P[dati_P["Tempo(s)"] >= inf_tlim]
@@ -30,7 +31,7 @@ for i in range(1, N_misure+1):
     t = dati_P["Tempo(s)"].to_numpy()
     P = dati_P["Pressione(kPa)"].to_numpy()
     T = dati_T["Temperatura(C)"].to_numpy()
-    T = T+273.13 # K
+    T = T+273.15 # K
     
     fig, ax = plt.subplots(1, 2, figsize=(10, 4))
     ax[0].plot(t, P, "o", label="$P(t)$", markersize=3)
@@ -52,7 +53,7 @@ for i in range(1, N_misure+1):
     a = fit.get_fit_params()[0][0]
 
     # stimo le nuove incertezze contanto anche quelle su T
-    dP_new = sqrt(dP**2 + (a*dT**2))
+    dP_new = sqrt(dP**2 + (a*dT)**2)
     df_fit["dP"] = [dP_new for ti in t]
 
     # fit finale
@@ -63,7 +64,7 @@ for i in range(1, N_misure+1):
     df = fit.get_chi2().df
     a = p[0]
     da = sqrt(cov[0][0])
-    a_exp = (P[0]+P_0)/T_0
+    a_exp = (P_0+P_a)/T_0
 
     print(f"a = {a} +- {da}")
     print("a_exp = ", a_exp)
