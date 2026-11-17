@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from numpy import sqrt, sum
+from numpy import sqrt, sum, array
 import matplotlib.pyplot as plt
 from converti import converti
 from mylib import LinearFit
@@ -33,7 +33,7 @@ for i in range(1, N_misure+1):
     # dati_P = dati_P[dati_P["Tempo(s)"] >= dati_T["Tempo(s)"].to_numpy()[-1] - 20]
     dati_T = dati_T.loc[dati_T.groupby("Temperatura(C)")["Tempo(s)"].idxmin()].sort_values("Tempo(s)")[-10:]
     dati_P = dati_P[dati_P['Tempo(s)'].isin(dati_T['Tempo(s)'])][-10:]
-    
+
 
     t = dati_P["Tempo(s)"].to_numpy()
     P = (dati_P["Pressione(kPa)"].to_numpy()+P_a)/(P_0+P_a)
@@ -82,19 +82,17 @@ for i in range(1, N_misure+1):
     print("\n")
 
 
-    # fig, ax = plt.subplots()
-    # fit.graph(ax, ("$T$ [K]", "$P(T)$ [kPa]"), 3, 15)
-    # # fig.savefig(f"./grafici/gl/P(T)_{i}.png")
-    # plt.show()
+    fig, ax = plt.subplots()
+    fit.graph(ax, ("$T$ [K]", "$P(T)$ [kPa]"), 3, 15)
+    # fig.savefig(f"./grafici/gl/P(T)_{i}.png")
+    plt.show()
 
-m = sum(a/(da**2))/sum(1/(da**2))
-dm = 1/sqrt(sum(1/da**2))
+a_all = array(a_all)
+da_all = array(da_all)
+
+m = sum(a_all/(da_all**2))/sum(1/(da_all**2))
+dm = 1/sqrt(sum(1/da_all**2))
 
 print(f"m = {m} +- {dm}")
 z = abs(m_exp - m)/dm
 print("z = ", z)
-    
-
-
-
-
