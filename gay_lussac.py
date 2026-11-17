@@ -38,8 +38,12 @@ for i in range(1, N_misure+1):
     t = dati_P["Tempo(s)"].to_numpy()
     P = (dati_P["Pressione(kPa)"].to_numpy()+P_a)/(P_0+P_a)
     T = dati_T["Temperatura(C)"].to_numpy()/T_0
-    dP = 0.005/(P_0 + P_a) # kPa
-    dT = 0.05/T_0 # °C = K
+    if (i==4):
+        dP = 0.005/(P_0 + P_a) # kPa
+        dT = 0.05/T_0 # °C = K
+    else:
+        dP = 0.005/(sqrt(12)*(P_0 + P_a)) # kPa
+        dT = 0.05/(sqrt(12)*T_0) # °C = K
     
     # fig, ax = plt.subplots(1, 2, figsize=(10, 4))
     # ax[0].plot(t, P, "o", label="$P(t)$", markersize=3)
