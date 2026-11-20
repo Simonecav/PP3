@@ -20,30 +20,34 @@ da_all = []
 
 m_exp = 1
 
+CHI2 = DataFrame({
+    "chi2": [],
+    "ni": [],
+})
 
 N_misure = 4
-for i in range(1, N_misure+1):
+for i in range(2, N_misure+1):
     dati_T = converti(f"./misure/temperatura gl/temp{i}.txt")
     dati_T["Temperatura(C)"] = c_to_k(dati_T["Temperatura(C)"])
     dati_P = converti(f"./misure/pressione gl/press{i}.txt")
-    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
-    ax[0].plot(dati_P["Tempo(s)"], dati_P["Pressione(kPa)"], "o", label="$P(t)$", markersize=1)
-    ax[0].set_xlabel("$t$ [s]")
-    ax[0].set_ylabel("$P$ [kPa]")
-    ax[1].plot(dati_T["Tempo(s)"], dati_T["Temperatura(C)"], "o",label="$T(t)$", markersize=1)
-    ax[1].set_xlabel("$t$ [s]")
-    ax[1].set_ylabel("$T$ [K]")
-    fig.savefig(f"./grafici/gl/T(t)_P(t)_{i}.png")
+    # fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+    # ax[0].plot(dati_P["Tempo(s)"], dati_P["Pressione(kPa)"], "o", label="$P(t)$", markersize=1)
+    # ax[0].set_xlabel("$t$ [s]")
+    # ax[0].set_ylabel("$P$ [kPa]")
+    # ax[1].plot(dati_T["Tempo(s)"], dati_T["Temperatura(C)"], "o",label="$T(t)$", markersize=1)
+    # ax[1].set_xlabel("$t$ [s]")
+    # ax[1].set_ylabel("$T$ [K]")
+    # fig.savefig(f"./grafici/gl/T(t)_P(t)_{i}.png")
     P_0 = P_a
     dP_0 = dP_a = 0.01
     # escludo il transiente iniziale
     dati_T = dati_T[(dati_T["Tempo(s)"] >= inf_tlim)]
     dati_P = dati_P[(dati_P["Tempo(s)"] >= inf_tlim)]
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(dati_T["Temperatura(C)"], dati_P["Pressione(kPa)"], "o", label="$P(t)$", markersize=1)
-    ax.set_xlabel("$T$ [K]")
-    ax.set_ylabel("$P(T)$ [kPa]")
-    fig.savefig(f"./grafici/gl/P(T)_{i}_cut.png")
+    # ax.plot(dati_T["Temperatura(C)"], dati_P["Pressione(kPa)"], "o", label="$P(t)$", markersize=1)
+    # ax.set_xlabel("$T$ [K]")
+    # ax.set_ylabel("$P(T)$ [kPa]")
+    # fig.savefig(f"./grafici/gl/P(T)_{i}_cut.png")
     dati_T = dati_T.loc[dati_T.groupby("Temperatura(C)")["Tempo(s)"].idxmin()].sort_values("Tempo(s)")[-20:]
     dati_P = dati_P[dati_P['Tempo(s)'].isin(dati_T['Tempo(s)'])][-20:]
 
@@ -91,10 +95,13 @@ for i in range(1, N_misure+1):
 
     chi2 = fit.get_chi2().chi2
     df = fit.get_chi2().df
+    CHI2.loc[i] = [chi2, df]
     a = p[0]
     da = sqrt(cov[0][0])
     a_all.append(a)
     da_all.append(da)
+
+    print(f"q = {p[1]} +- {sqrt(cov[1][1])}")
 
     print(f"a = {a} +- {da}")
     print("chi2 = ", chi2)
@@ -103,9 +110,9 @@ for i in range(1, N_misure+1):
     print("\n")
 
 
-    fig, ax = plt.subplots(figsize=(8, 6))
-    fit.graph(ax, ("$T$ [K]", "$P(T)$ [kPa]"), 3, 15)
-    fig.savefig(f"./grafici/gl/P(T)_{i}.png")
+    # fig, ax = plt.subplots(figsize=(10, 6))
+    # fit.graph(ax, ("$T$ [K]", "$P(T)$ [kPa]"), 3, 18, 12)
+    # fig.savefig(f"./grafici/gl/P(T)_{i}.png")
 
 a_all = array(a_all)
 da_all = array(da_all)
@@ -116,3 +123,10 @@ dm = 1/sqrt(sum(1/da_all**2))
 print(f"m = {m} +- {dm}")
 z = abs(m_exp - m)/dm
 print("z = ", z)
+
+print(DataFrame({
+    "m": a_all,
+    "dm": da_all,
+}).to_latex())
+
+print(CHI2.round(2).to_latex())
